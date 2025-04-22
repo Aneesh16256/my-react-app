@@ -53,45 +53,22 @@ jobs:
     - name: Scan Docker Image
       run: trivy image --severity CRITICAL,HIGH --no-progress ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest
 
-  deploy:
-    needs: security_scan
-    runs-on: ubuntu-latest
-  
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-  
-      - name: SSH Agent Setup
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-  
-      - name: Deploy to Server
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H 123.45.67.89 >> ~/.ssh/known_hosts
-  
-          ssh -o StrictHostKeyChecking=no aneeshaswany7@123.45.67.89 << 'EOF'
-            set -x
-  
-            echo "🔄 Pulling latest Docker image..."
-            docker pull aneeshaswany7/my-react-app:latest || { echo "❌ Docker pull failed"; exit 1; }
-  
-            echo "🛑 Stopping existing container if it exists..."
-            docker stop react-app || echo "⚠️ No container to stop"
-  
-            echo "🧹 Removing old container if it exists..."
-            docker rm react-app || echo "⚠️ No container to remove"
-  
-            echo "🚀 Running new container..."
-            docker run -d --name react-app --restart=always -p 80:80 aneeshaswany7/my-react-app:latest || { echo "❌ Docker run failed"; exit 1; }
-  
-            echo "✅ Deployment complete"
-  
-            exit 0
-          EOF
-
-
-  
-  
-  
+    - name: Deploy to Server
+      run: |
+        ssh -o StrictHostKeyChecking=no aneeshaswany7@34.9.146.192 << 'EOF'
+          set -e  # Exit on error
+          echo "🔄 Pulling Docker image..."
+          docker pull aneeshaswany7/my-react-app:latest || { echo "❌ Pull failed"; exit 1; }
+          
+          echo "🛑 Stopping old container..."
+          docker stop react-app || true
+          docker rm react-app || true
+          
+          echo "🚀 Starting new container..."
+          docker run -d --name react-app -p 3000:80 --restart=always aneeshaswany7/my-react-app:latest
+          echo "✅ Done!"
+        EOF
+    
+      
+      
+      
