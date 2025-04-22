@@ -56,26 +56,25 @@ jobs:
   deploy:
     needs: security_scan
     runs-on: ubuntu-latest
-
+  
     steps:
-    - name: SSH Agent Setup
-      uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: SSH Agent Setup
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+  
+      - name: Deploy to Server
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 123.45.67.89 >> ~/.ssh/known_hosts
+          
+          ssh -o StrictHostKeyChecking=no ubuntu@123.45.67.89 << 'EOF'
+            docker pull your-dockerhub-username/my-react-app:latest
+            docker stop react-app || true
+            docker rm react-app || true
+            docker run -d --name react-app --restart=always -p 80:80 your-dockerhub-username/my-react-app:latest
+          EOF
 
-    - name: Deploy to Server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        
-        ssh-keyscan -H your-server-ip >> ~/.ssh/known_hosts
-        
-        ssh -i ~/.ssh/id_rsa ubuntu@your-server-ip << 'EOF'
-          docker pull ***/my-react-app:latest
-          docker stop react-app || true
-          docker rm react-app || true
-          docker run -d --name react-app --restart=always -p 80:80 ***/my-react-app:latest
-        EOF
