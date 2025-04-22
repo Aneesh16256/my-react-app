@@ -64,10 +64,18 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Deploy to Server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SERVER_IP }} << 'EOF'
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        
+        ssh-keyscan -H your-server-ip >> ~/.ssh/known_hosts
+        
+        ssh -i ~/.ssh/id_rsa ubuntu@your-server-ip << 'EOF'
+          docker pull ***/my-react-app:latest
           docker stop react-app || true
           docker rm react-app || true
-          docker run -d --name react-app --restart=always -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest
+          docker run -d --name react-app --restart=always -p 80:80 ***/my-react-app:latest
         EOF
