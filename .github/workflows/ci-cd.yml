@@ -70,24 +70,27 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H 123.45.67.89 >> ~/.ssh/known_hosts
-      
+  
           ssh -o StrictHostKeyChecking=no aneeshaswany7@123.45.67.89 << 'EOF'
             set -x
-      
+  
             echo "🔄 Pulling latest Docker image..."
             docker pull aneeshaswany7/my-react-app:latest || { echo "❌ Docker pull failed"; exit 1; }
-      
+  
             echo "🛑 Stopping existing container if it exists..."
             docker stop react-app || echo "⚠️ No container to stop"
-      
+  
             echo "🧹 Removing old container if it exists..."
             docker rm react-app || echo "⚠️ No container to remove"
-      
+  
             echo "🚀 Running new container..."
             docker run -d --name react-app --restart=always -p 80:80 aneeshaswany7/my-react-app:latest || { echo "❌ Docker run failed"; exit 1; }
-      
+  
             echo "✅ Deployment complete"
+  
+            exit 0
           EOF
+
 
   
   
