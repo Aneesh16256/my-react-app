@@ -49,26 +49,33 @@ jobs:
       run: |
         wget https://github.com/aquasecurity/trivy/releases/download/v0.61.1/trivy_0.61.1_Linux-64bit.deb
         sudo dpkg -i trivy_0.61.1_Linux-64bit.deb
-
     - name: Scan Docker Image
       run: trivy image --severity CRITICAL,HIGH --no-progress ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest
+
+  deploy:
+    needs: [build, security_scan]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Add SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 34.9.146.192 >> ~/.ssh/known_hosts
 
     - name: Deploy to Server
       run: |
         ssh -o StrictHostKeyChecking=no aneeshaswany7@34.9.146.192 << 'EOF'
           set -e  # Exit on error
           echo "🔄 Pulling Docker image..."
-          docker pull aneeshaswany7/my-react-app:latest || { echo "❌ Pull failed"; exit 1; }
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest || { echo "❌ Pull failed"; exit 1; }
           
           echo "🛑 Stopping old container..."
           docker stop react-app || true
           docker rm react-app || true
           
           echo "🚀 Starting new container..."
-          docker run -d --name react-app -p 3000:80 --restart=always aneeshaswany7/my-react-app:latest
+          docker run -d --name react-app -p 3000:80 --restart=always ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest
           echo "✅ Done!"
         EOF
-    
-      
-      
-      
