@@ -1,0 +1,32 @@
+# Ignore all files by default
+*
+
+# Allow these specific files/directories
+!package.json
+!package-lock.json
+!yarn.lock
+!public/
+!src/
+
+# Node.js specific ignores
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build and local files
+build/
+.dockerignore
+Dockerfile
+.git
+.gitignore
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+.DS_Store
