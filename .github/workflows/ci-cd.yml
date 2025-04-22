@@ -70,11 +70,12 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H 123.45.67.89 >> ~/.ssh/known_hosts
-          
-          ssh -o StrictHostKeyChecking=no ubuntu@123.45.67.89 << 'EOF'
+      
+          ssh -o StrictHostKeyChecking=no aneeshaswany7@123.45.67.89 << 'EOF'
             docker pull your-dockerhub-username/my-react-app:latest
             docker stop react-app || true
             docker rm react-app || true
             docker run -d --name react-app --restart=always -p 80:80 your-dockerhub-username/my-react-app:latest
           EOF
+
 
