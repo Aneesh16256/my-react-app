@@ -62,19 +62,20 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H 34.9.146.192 >> ~/.ssh/known_hosts
+        ssh-keyscan -H 34.9.146.192 >> ~/.ssh/known_hosts  # Removed "is this correct"
 
     - name: Deploy to Server
       run: |
-        ssh -o StrictHostKeyChecking=no aneeshaswany7@34.9.146.192 << 'EOF'
-          set -e  # Exit on error
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
           echo "🔄 Pulling Docker image..."
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest || { echo "❌ Pull failed"; exit 1; }
-          
           echo "🛑 Stopping old container..."
           docker stop react-app || true
           docker rm react-app || true
-          
           echo "🚀 Starting new container..."
           docker run -d --name react-app -p 3000:80 --restart=always ${{ secrets.DOCKERHUB_USERNAME }}/my-react-app:latest
           echo "✅ Done!"
